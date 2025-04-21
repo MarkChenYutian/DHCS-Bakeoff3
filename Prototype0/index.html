@@ -4,247 +4,217 @@
   <meta charset="utf-8">
   <title>Bakeoff 3</title>
   <script src="https://dhcs-s25-bakeoff3.glitch.me/framework.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-800 font-sans relative">
+  <style>
+    /* === Minimal, plain styles only === */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: white;
+      color: black;
+    }
+    header {
+      margin-bottom: 20px;
+    }
+    header h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+    header small {
+      font-size: 12px;
+      color: #555;
+      margin-left: 10px;
+    }
 
-  <!-- Title Bar -->
-  <header class="bg-white shadow px-6 py-4">
-    <h1 class="text-3xl font-bold flex items-center space-x-2">
-      <span>🍿</span>
-      <span>Bakeoff 3 Movie Listings</span>
-    </h1>
+    #successToast {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px;
+      border: 1px solid #080;
+      background: #cfc;
+      display: none;
+    }
+
+    .filters {
+      margin-bottom: 20px;
+    }
+    .filters input,
+    .filters select,
+    .filters button {
+      margin-right: 10px;
+      padding: 5px 8px;
+      border: 1px solid #999;
+      background: white;
+    }
+    .filters button {
+      cursor: pointer;
+    }
+
+    .movie-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .movie-card {
+      box-sizing: border-box;
+      width: calc(33.333% - 10px);
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #fafafa;
+      position: relative;
+      cursor: pointer;
+    }
+    .movie-card.selected {
+      border-color: black;
+      background: #eee;
+    }
+    .selected-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      font-size: 10px;
+      padding: 2px 4px;
+      border: 1px solid #000;
+      background: white;
+      display: none;
+    }
+    .movie-card.selected .selected-badge {
+      display: block;
+    }
+    .time-tag, .genre-tag {
+      display: inline-block;
+      margin: 5px 5px 0 0;
+      font-size: 10px;
+      padding: 2px 4px;
+      border: 1px solid #999;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🍿 Bakeoff 3 Movie Listings <small>(Prototype 0)</small></h1>
   </header>
 
-  <!-- Success Toast -->
-  <div
-    id="successToast"
-    class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity"
-  >
-    ✅ Submitted successfully!
-  </div>
+  <div id="successToast">✅ Submitted successfully!</div>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
+  <section class="filters">
+    <input id="searchInput" type="text" placeholder="Search by movie title…">
+    <select id="genreSelect">
+      <option value="">All Genres</option>
+    </select>
+    <select id="ticketsSelect">
+      <option value="1">1 Ticket</option>
+      <option value="2">2 Tickets</option>
+      <option value="3">3 Tickets</option>
+      <option value="4">4 Tickets</option>
+      <option value="5">5 Tickets</option>
+      <option value="6">6 Tickets</option>
+      <option value="7">7 Tickets</option>
+      <option value="8">8 Tickets</option>
+      <option value="9">9 Tickets</option>
+      <option value="10">10 Tickets</option>
+    </select>
+    <input id="userName" type="text" placeholder="Your name">
+    <button id="submitButton">Submit</button>
+  </section>
 
-    <!-- Filters Card -->
-    <section class="bg-white rounded-lg shadow p-6 mb-8">
-      <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
-        <!-- Search -->
-        <input
-          id="searchInput"
-          type="text"
-          placeholder="🔍 Search by movie title…"
-          class="w-full sm:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-
-        <!-- Genre -->
-        <div class="relative w-full sm:w-1/6 mt-4 sm:mt-0">
-          <select
-            id="genreSelect"
-            class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 pr-8 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All Genres</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 
-                       10.586l3.293-3.293a1 1 0 111.414
-                       1.414l-4 4a1 1 0 01-1.414
-                       0l-4-4a1 1 0 010-1.414z"
-                    clip-rule="evenodd"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- Tickets -->
-        <div class="relative w-full sm:w-1/6 mt-4 sm:mt-0">
-          <select
-            id="ticketsSelect"
-            class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 pr-8 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="1">1 Ticket</option>
-            <option value="2">2 Tickets</option>
-            <option value="3">3 Tickets</option>
-            <option value="4">4 Tickets</option>
-            <option value="5">5 Tickets</option>
-            <option value="6">6 Tickets</option>
-            <option value="7">7 Tickets</option>
-            <option value="8">8 Tickets</option>
-            <option value="9">9 Tickets</option>
-            <option value="10">10 Tickets</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 
-                       10.586l3.293-3.293a1 1 0 111.414
-                       1.414l-4 4a1 1 0 01-1.414
-                       0l-4-4a1 1 0 010-1.414z"
-                    clip-rule="evenodd"/>
-            </svg>
-          </div>
-        </div>
-
-        <!-- User Name -->
-        <input
-          id="userName"
-          type="text"
-          placeholder="Your name"
-          class="w-full sm:w-1/6 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 sm:mt-0"
-        />
-
-        <!-- Submit Button -->
-        <button
-          id="submitButton"
-          class="w-full sm:w-auto mt-4 sm:mt-0 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Submit
-        </button>
-      </div>
-    </section>
-
-    <!-- Movies Grid -->
-    <section>
-      <div id="moviesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-    </section>
-  </main>
+  <section class="movie-grid" id="moviesGrid"></section>
 
   <script>
     const judge = new Judge("teamName");
     const movies = judge.getMovies();
-    const grid = document.getElementById("moviesGrid");
-    const searchInput = document.getElementById("searchInput");
-    const genreSelect = document.getElementById("genreSelect");
+
+    const grid          = document.getElementById("moviesGrid");
+    const searchInput   = document.getElementById("searchInput");
+    const genreSelect   = document.getElementById("genreSelect");
     const ticketsSelect = document.getElementById("ticketsSelect");
     const userNameInput = document.getElementById("userName");
-    const submitButton = document.getElementById("submitButton");
-    const toast = document.getElementById("successToast");
+    const submitButton  = document.getElementById("submitButton");
+    const toast         = document.getElementById("successToast");
 
     let currentlySelectedMovie = null;
-    let currentlySelectedTime = null;
+    let currentlySelectedTime  = null;
 
-    // Populate genres
+    // Populate genre dropdown
     const allGenres = new Set();
-    movies.forEach((m) => m.genres.forEach((g) => allGenres.add(g)));
-    Array.from(allGenres).sort().forEach((genre) => {
+    movies.forEach(m => m.genres.forEach(g => allGenres.add(g)));
+    Array.from(allGenres).sort().forEach(genre => {
       const opt = document.createElement("option");
       opt.value = genre.toLowerCase();
       opt.textContent = genre;
       genreSelect.appendChild(opt);
     });
 
-    // Build movie/time cards
-    movies.forEach((movie) => {
-      movie.movieTimes.forEach((time) => {
+    // Build simple movie cards
+    movies.forEach(movie => {
+      movie.movieTimes.forEach(time => {
         const card = document.createElement("div");
-        card.className = [
-          "movie-card",
-          "relative",
-          "bg-white",
-          "rounded-lg",
-          "shadow",
-          "hover:shadow-lg",
-          "transition-shadow",
-          "p-6",
-          "flex",
-          "flex-col",
-          "cursor-pointer",
-          "border-2",
-          "border-transparent"
-        ].join(" ");
-        card.dataset.title = movie.title.toLowerCase();
-        card.dataset.genres = movie.genres.map((g) => g.toLowerCase()).join(",");
+        card.className = "movie-card";
+        card.dataset.title  = movie.title.toLowerCase();
+        card.dataset.genres = movie.genres.map(g=>g.toLowerCase()).join(",");
 
         // Selected badge
         const selBadge = document.createElement("span");
-        selBadge.className = [
-          "selected-badge",
-          "absolute",
-          "top-2",
-          "right-2",
-          "bg-blue-600",
-          "text-white",
-          "text-xs",
-          "font-bold",
-          "px-2",
-          "py-1",
-          "rounded-full",
-          "hidden"
-        ].join(" ");
+        selBadge.className = "selected-badge";
         selBadge.textContent = "Selected";
         card.appendChild(selBadge);
 
         card.addEventListener("click", () => {
-          // clear all cards
-          document.querySelectorAll(".movie-card").forEach((c) => {
-            c.classList.replace("border-blue-600", "border-transparent");
-            c.classList.replace("bg-blue-50", "bg-white");
-            c.querySelector(".selected-badge").classList.add("hidden");
-          });
-          // highlight this one
-          card.classList.replace("border-transparent", "border-blue-600");
-          card.classList.replace("bg-white", "bg-blue-50");
-          selBadge.classList.remove("hidden");
-
+          document.querySelectorAll(".movie-card").forEach(c => 
+            c.classList.remove("selected")
+          );
+          card.classList.add("selected");
           currentlySelectedMovie = movie;
-          currentlySelectedTime = time;
+          currentlySelectedTime  = time;
         });
 
-        // Title
+        // Title & Description
         const h2 = document.createElement("h2");
         h2.textContent = movie.title;
-        h2.className = "text-lg font-semibold mb-2";
         card.appendChild(h2);
 
-        // Description
         const p = document.createElement("p");
         p.textContent = movie.description;
-        p.className = "text-gray-600 text-sm mb-4 flex-1";
         card.appendChild(p);
 
-        // Time badge
-        const timeSpan = document.createElement("span");
-        timeSpan.textContent = time;
-        timeSpan.className =
-          "self-start inline-block bg-blue-100 text-blue-800 text-xs font-medium mr-2 px-2.5 py-0.5 rounded mb-4";
-        card.appendChild(timeSpan);
+        // Time tag
+        const timeTag = document.createElement("span");
+        timeTag.className = "time-tag";
+        timeTag.textContent = time;
+        card.appendChild(timeTag);
 
-        // Genres tags
-        const genresWrap = document.createElement("div");
-        genresWrap.className = "flex flex-wrap gap-2 self-start";
-        movie.genres.forEach((g) => {
+        // Genre tags
+        movie.genres.forEach(g => {
           const tag = document.createElement("span");
+          tag.className = "genre-tag";
           tag.textContent = g;
-          tag.className =
-            "inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded";
-          genresWrap.appendChild(tag);
+          card.appendChild(tag);
         });
-        card.appendChild(genresWrap);
 
         grid.appendChild(card);
       });
     });
 
-    // Filter function
+    // Filter logic
     function filterCards() {
       const q = searchInput.value.trim().toLowerCase();
       const genreFilter = genreSelect.value;
-      document.querySelectorAll(".movie-card").forEach((card) => {
-        const matchesText = card.dataset.title.includes(q);
-        const matchesGenre =
-          !genreFilter ||
+      document.querySelectorAll(".movie-card").forEach(card => {
+        const matchesText  = card.dataset.title.includes(q);
+        const matchesGenre = !genreFilter ||
           card.dataset.genres.split(",").includes(genreFilter);
-        card.style.display = matchesText && matchesGenre ? "" : "none";
+        card.style.display = (matchesText && matchesGenre) ? "" : "none";
       });
     }
     searchInput.addEventListener("input", filterCards);
     genreSelect.addEventListener("change", filterCards);
 
-    // Submission handling
-    judge.on("submission", (data) => {
-      toast.classList.add("opacity-100");
-      setTimeout(() => toast.classList.remove("opacity-100"), 3000);
+    // Submission & toast
+    judge.on("submission", data => {
+      toast.style.display = "block";
+      setTimeout(() => toast.style.display = "none", 3000);
       console.log("Time elapsed:", data.elapsedTime);
     });
 
@@ -258,14 +228,14 @@
         userNameInput.focus();
         return;
       }
-      const userData = {
+      judge.submitMovieChoice({
         movie: currentlySelectedMovie,
         movieTime: currentlySelectedTime,
         numberOfTickets: ticketsSelect.value,
         userName: userNameInput.value.trim()
-      };
-      judge.submitMovieChoice(userData);
+      });
     });
   </script>
+
 </body>
 </html>

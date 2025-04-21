@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bakeoff 3</title>
+  <script src="https://dhcs-s25-bakeoff3.glitch.me/framework.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans relative">
+
+  <!-- Title Bar -->
+  <header class="bg-white shadow px-6 py-4">
+    <h1 class="text-3xl font-bold flex items-center space-x-2">
+      <span>🍿</span>
+      <span>Bakeoff 3 Movie Listings</span>
+      <span class="ml-3 bg-gray-200 text-gray-800 text-xs font-semibold px-2 py-0.5 rounded-full">
+        Prototype 1
+      </span>
+    </h1>
+  </header>
+
+  <!-- Success Toast -->
+  <div id="successToast"
+       class="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg opacity-0 transition-opacity">
+    ✅ Submitted successfully!
+  </div>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+
+    <!-- Filters Card -->
+    <section class="bg-white rounded-lg shadow p-6 mb-8">
+      <div class="flex flex-col gap-4">
+        <!-- Row 1: Search, Tickets, Name, Submit -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+          <input id="searchInput" type="text" placeholder="🔍 Search by movie title…"
+                 class="w-full sm:w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+
+          <div class="relative w-full sm:w-1/6">
+            <select id="ticketsSelect"
+                    class="block appearance-none w-full bg-white border border-gray-300 text-gray-700 px-4 py-2 pr-8 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              <option value="1">1 Ticket</option>
+              <option value="2">2 Tickets</option>
+              <option value="3">3 Tickets</option>
+              <option value="4">4 Tickets</option>
+              <option value="5">5 Tickets</option>
+              <option value="6">6 Tickets</option>
+              <option value="7">7 Tickets</option>
+              <option value="8">8 Tickets</option>
+              <option value="9">9 Tickets</option>
+              <option value="10">10 Tickets</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd"
+                      d="M5.293 7.293a1 1 0 011.414 0L10 
+                         10.586l3.293-3.293a1 1 0 111.414
+                         1.414l-4 4a1 1 0 01-1.414
+                         0l-4-4a1 1 0 010-1.414z"
+                      clip-rule="evenodd"/>
+              </svg>
+            </div>
+          </div>
+
+          <input id="userName" type="text" placeholder="Your name"
+                 class="w-full sm:w-1/6 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+
+          <button id="submitButton"
+                  class="w-full sm:w-auto px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            Submit
+          </button>
+        </div>
+
+        <!-- Row 2: Genre Chips -->
+        <div id="genreFilterChips" class="flex flex-wrap gap-2"></div>
+      </div>
+    </section>
+
+    <!-- Movies Grid -->
+    <section>
+      <div id="moviesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+  </main>
+
+  <script>
+    const judge = new Judge("teamName");
+    const movies = judge.getMovies();
+    const grid = document.getElementById("moviesGrid");
+    const searchInput = document.getElementById("searchInput");
+    const ticketsSelect = document.getElementById("ticketsSelect");
+    const userNameInput = document.getElementById("userName");
+    const submitButton = document.getElementById("submitButton");
+    const toast = document.getElementById("successToast");
+
+    // include/exclude tag state
+    const includeTags = new Set();
+    const excludeTags = new Set();
+
+    // gather all genres
+    const allGenres = new Set();
+    movies.forEach(m => m.genres.forEach(g => allGenres.add(g)));
+
+    // build genre chips
+    const chipsContainer = document.getElementById("genreFilterChips");
+    Array.from(allGenres).sort().forEach(genre => {
+      const chip = document.createElement("span");
+      chip.textContent = genre;
+      chip.dataset.genre = genre.toLowerCase();
+      chip.dataset.label = genre;
+      chip.dataset.state = "neutral";
+      chip.className = [
+        "cursor-pointer", "select-none",
+        "px-2", "py-1", "rounded-full", "text-xs", "font-medium",
+        "bg-gray-200", "text-gray-800",
+        "hover:bg-gray-300", "transition"
+      ].join(" ");
+
+      chip.addEventListener("click", () => {
+        const g = chip.dataset.genre, label = chip.dataset.label;
+        if (chip.dataset.state === "neutral") {
+          chip.dataset.state = "include";
+          includeTags.add(g);
+          chip.classList.replace("bg-gray-200", "bg-blue-200");
+          chip.classList.replace("text-gray-800", "text-blue-800");
+          chip.classList.add("ring", "ring-blue-500");
+          chip.textContent = `+ ${label}`;
+        } else if (chip.dataset.state === "include") {
+          chip.dataset.state = "exclude";
+          includeTags.delete(g);
+          excludeTags.add(g);
+          chip.classList.replace("bg-blue-200", "bg-red-200");
+          chip.classList.replace("text-blue-800", "text-red-800");
+          chip.classList.replace("ring-blue-500", "ring-red-500");
+          chip.textContent = `– ${label}`;
+        } else {
+          chip.dataset.state = "neutral";
+          excludeTags.delete(g);
+          chip.classList.replace("bg-red-200", "bg-gray-200");
+          chip.classList.replace("text-red-800", "text-gray-800");
+          chip.classList.remove("ring", "ring-red-500");
+          chip.textContent = label;
+        }
+        filterCards();
+      });
+
+      chipsContainer.appendChild(chip);
+    });
+
+    // build movie cards
+    let currentlySelectedMovie = null, currentlySelectedTime = null;
+
+    movies.forEach(movie => {
+      movie.movieTimes.forEach(time => {
+        const card = document.createElement("div");
+        card.className = [
+          "movie-card", "relative", "bg-white", "rounded-lg",
+          "shadow", "hover:shadow-lg", "transition-shadow",
+          "p-6", "flex", "flex-col", "cursor-pointer",
+          "border-2", "border-transparent"
+        ].join(" ");
+        card.dataset.title = movie.title.toLowerCase();
+        card.dataset.genres = movie.genres.map(g => g.toLowerCase()).join(",");
+
+        // selected badge
+        const sel = document.createElement("span");
+        sel.className = [
+          "selected-badge", "absolute", "top-2", "right-2",
+          "bg-blue-600", "text-white", "text-xs", "font-bold",
+          "px-2", "py-1", "rounded-full", "hidden"
+        ].join(" ");
+        sel.textContent = "Selected";
+        card.appendChild(sel);
+
+        card.addEventListener("click", () => {
+          document.querySelectorAll(".movie-card").forEach(c => {
+            c.classList.replace("border-blue-600", "border-transparent");
+            c.classList.replace("bg-blue-50", "bg-white");
+            c.querySelector(".selected-badge").classList.add("hidden");
+          });
+          card.classList.replace("border-transparent", "border-blue-600");
+          card.classList.replace("bg-white", "bg-blue-50");
+          sel.classList.remove("hidden");
+          currentlySelectedMovie = movie;
+          currentlySelectedTime = time;
+        });
+
+        // Title
+        const h2 = document.createElement("h2");
+        h2.textContent = movie.title;
+        h2.className = "text-lg font-semibold mb-2";
+        card.appendChild(h2);
+
+        // —— TIMELINE: start — duration — end ——  
+        const duration = movie.movieLength;
+        const [h, m] = time.split(":").map(n => parseInt(n, 10));
+        const endTotal = h * 60 + m + duration;
+        const endH = Math.floor(endTotal / 60) % 24, endM = endTotal % 60;
+        const endTime = `${String(endH).padStart(2,"0")}:${String(endM).padStart(2,"0")}`;
+        const durText = duration >= 60
+          ? `${Math.floor(duration/60)}h${duration%60}m`
+          : `${duration}m`;
+
+        const timeline = document.createElement("div");
+        timeline.className = "flex items-center mb-4 text-xs";
+
+        const startSpan = document.createElement("span");
+        startSpan.textContent = time;
+        startSpan.className = "font-medium text-gray-700";
+
+        const line1 = document.createElement("div");
+        line1.className = "flex-1 h-px bg-gray-300 mx-2";
+
+        const durSpan = document.createElement("span");
+        durSpan.textContent = durText;
+        durSpan.className = "text-gray-500";
+
+        const line2 = document.createElement("div");
+        line2.className = "flex-1 h-px bg-gray-300 mx-2";
+
+        const endSpan = document.createElement("span");
+        endSpan.textContent = endTime;
+        endSpan.className = "font-medium text-gray-700";
+
+        timeline.append(startSpan, line1, durSpan, line2, endSpan);
+        card.appendChild(timeline);
+
+        // Description
+        const p = document.createElement("p");
+        p.textContent = movie.description;
+        p.className = "text-gray-600 text-sm mb-4 flex-1";
+        card.appendChild(p);
+
+        // Genre tags
+        const wrap = document.createElement("div");
+        wrap.className = "flex flex-wrap gap-2 self-start";
+        movie.genres.forEach(g => {
+          const tag = document.createElement("span");
+          tag.textContent = g;
+          tag.className = "inline-block bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded";
+          wrap.appendChild(tag);
+        });
+        card.appendChild(wrap);
+
+        grid.appendChild(card);
+      });
+    });
+
+    // filter logic
+    function filterCards() {
+      const q = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll(".movie-card").forEach(card => {
+        const titleOK = card.dataset.title.includes(q);
+        const genres = card.dataset.genres.split(",");
+        const hasIncluded = Array.from(includeTags).every(g => genres.includes(g));
+        const hasNoExcluded = Array.from(excludeTags).every(g => !genres.includes(g));
+        card.style.display = (titleOK && hasIncluded && hasNoExcluded) ? "" : "none";
+      });
+    }
+    searchInput.addEventListener("input", filterCards);
+
+    // submission
+    judge.on("submission", data => {
+      toast.classList.add("opacity-100");
+      setTimeout(() => toast.classList.remove("opacity-100"), 3000);
+    });
+    submitButton.addEventListener("click", () => {
+      if (!currentlySelectedMovie) {
+        alert("Please select a movie/time first."); return;
+      }
+      if (!userNameInput.value.trim()) {
+        alert("Please enter your name."); userNameInput.focus(); return;
+      }
+      judge.submitMovieChoice({
+        movie: currentlySelectedMovie,
+        movieTime: currentlySelectedTime,
+        numberOfTickets: ticketsSelect.value,
+        userName: userNameInput.value.trim()
+      });
+    });
+  </script>
+</body>
+</html>
