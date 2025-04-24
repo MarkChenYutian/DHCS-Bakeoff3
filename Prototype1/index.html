@@ -244,7 +244,7 @@
       });
     });
 
-    // filter logic
+    // filter logic based on search input
     function filterCards() {
       const q = searchInput.value.trim().toLowerCase();
       document.querySelectorAll(".movie-card").forEach(card => {
@@ -255,13 +255,16 @@
         card.style.display = (titleOK && hasIncluded && hasNoExcluded) ? "" : "none";
       });
     }
+    // trigger filter based on search input
     searchInput.addEventListener("input", filterCards);
 
-    // submission
+    // show toast on successful submission
     judge.on("submission", data => {
       toast.classList.add("opacity-100");
       setTimeout(() => toast.classList.remove("opacity-100"), 3000);
     });
+
+    // submission of selected movie and time
     submitButton.addEventListener("click", () => {
       if (!currentlySelectedMovie) {
         alert("Please select a movie/time first."); return;
