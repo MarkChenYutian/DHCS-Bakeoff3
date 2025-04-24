@@ -125,7 +125,7 @@
   <script>
     const judge = new Judge("teamName");
     const movies = judge.getMovies();
-
+  
     const grid          = document.getElementById("moviesGrid");
     const searchInput   = document.getElementById("searchInput");
     const genreSelect   = document.getElementById("genreSelect");
@@ -147,7 +147,7 @@
       genreSelect.appendChild(opt);
     });
 
-    // Build simple movie cards
+    // Build simple movie cards for each time and movie combination
     movies.forEach(movie => {
       movie.movieTimes.forEach(time => {
         const card = document.createElement("div");
@@ -161,6 +161,7 @@
         selBadge.textContent = "Selected";
         card.appendChild(selBadge);
 
+        // Handle card click
         card.addEventListener("click", () => {
           document.querySelectorAll(".movie-card").forEach(c => 
             c.classList.remove("selected")
@@ -197,7 +198,7 @@
       });
     });
 
-    // Filter logic
+    // Filter logic based on search text and selected genre
     function filterCards() {
       const q = searchInput.value.trim().toLowerCase();
       const genreFilter = genreSelect.value;
@@ -218,6 +219,7 @@
       console.log("Time elapsed:", data.elapsedTime);
     });
 
+     // Handle submit button click
     submitButton.addEventListener("click", () => {
       if (!currentlySelectedMovie) {
         alert("Please select a movie/time first.");
@@ -228,6 +230,7 @@
         userNameInput.focus();
         return;
       }
+      // Submit the selected movie and info to the judging system
       judge.submitMovieChoice({
         movie: currentlySelectedMovie,
         movieTime: currentlySelectedTime,
